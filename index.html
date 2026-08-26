@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brain Builder Academy — Teach a Robot to Think</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:ital,wght@0,400;0,700;0,900;1,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16183A;
+  --paper:#DDE4FF;
+  --white:#FFFFFF;
+  --pink:#FF3D7F;
+  --sun:#FFC93C;
+  --mint:#16D6A4;
+  --blue:#3B5BFF;
+  --grape:#8A4FFF;
+  --shadow:6px 6px 0 var(--ink);
+  --shadow-sm:4px 4px 0 var(--ink);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  color:var(--ink);
+  background-color:var(--paper);
+  background-image:radial-gradient(var(--ink) 1.4px, transparent 1.5px);
+  background-size:26px 26px;
+  background-position:-13px -13px;
+  min-height:100vh;
+  padding:18px 14px 40px;
+  font-size:17px;
+  line-height:1.5;
+}
+.wrap{max-width:1080px;margin:0 auto}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+  background:var(--white);border:4px solid var(--ink);border-radius:22px;
+  box-shadow:var(--shadow);padding:14px 18px;margin-bottom:18px;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand h1{
+  font-family:'Bungee',cursive;font-size:clamp(17px,3.4vw,26px);
+  margin:0;line-height:1;letter-spacing:.5px;
+}
+.brand h1 span{color:var(--pink)}
+.brand .sub{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.6px;opacity:.6}
+.badges{display:flex;gap:8px;align-items:center}
+.badge{
+  width:46px;height:46px;border-radius:50%;border:3px dashed var(--ink);
+  display:grid;place-items:center;font-size:20px;opacity:.35;background:#EDF0FF;
+  transition:transform .25s;
+}
+.badge.on{
+  opacity:1;border-style:solid;background:var(--sun);
+  box-shadow:3px 3px 0 var(--ink);animation:stamp .5s cubic-bezier(.2,1.6,.4,1);
+}
+@keyframes stamp{0%{transform:scale(2.4) rotate(-18deg);opacity:0}60%{transform:scale(.86) rotate(6deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.iconbtn{
+  border:3px solid var(--ink);background:var(--white);border-radius:12px;
+  width:44px;height:44px;font-size:19px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);
+}
+.iconbtn:active{transform:translate(3px,3px);box-shadow:none}
+
+/* ---------- level chips ---------- */
+.levelbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.chip{
+  font-family:'Bungee',cursive;font-size:12px;letter-spacing:.5px;
+  border:3px solid var(--ink);background:var(--white);border-radius:999px;
+  padding:8px 14px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);
+}
+.chip[data-active="true"]{background:var(--blue);color:#fff}
+.chip[disabled]{opacity:.4;cursor:not-allowed;box-shadow:none}
+
+/* ---------- stage ---------- */
+.stage{
+  background:var(--white);border:4px solid var(--ink);border-radius:26px;
+  box-shadow:var(--shadow);padding:22px;margin-bottom:16px;
+}
+.level{display:none}
+.level.active{display:block;animation:slidein .45s ease}
+@keyframes slidein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.eyebrow{
+  font-family:'Space Mono',monospace;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:2px;color:var(--grape);margin:0 0 4px;
+}
+h2{font-family:'Bungee',cursive;font-size:clamp(21px,4vw,32px);margin:0 0 10px;line-height:1.1}
+.lede{margin:0 0 18px;max-width:62ch;font-size:17px}
+.big{font-weight:900}
+mark{background:var(--sun);padding:0 5px;border-radius:5px}
+
+/* ---------- shared controls ---------- */
+.btn{
+  font-family:'Bungee',cursive;font-size:15px;letter-spacing:.6px;
+  border:4px solid var(--ink);border-radius:16px;background:var(--sun);color:var(--ink);
+  padding:12px 20px;cursor:pointer;box-shadow:var(--shadow-sm);
+}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 var(--ink)}
+.btn:active{transform:translate(4px,4px);box-shadow:none}
+.btn.pink{background:var(--pink);color:#fff}
+.btn.mint{background:var(--mint)}
+.btn.blue{background:var(--blue);color:#fff}
+.btn.ghost{background:var(--white)}
+.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none;box-shadow:var(--shadow-sm)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+
+.panel{
+  border:3px solid var(--ink);border-radius:18px;padding:14px;background:#F5F7FF;
+}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+
+/* switches (inputs) */
+.switchrow{display:flex;flex-direction:column;gap:10px}
+.switch{
+  display:flex;align-items:center;gap:12px;border:3px solid var(--ink);border-radius:16px;
+  background:var(--white);padding:10px 12px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);
+  font-weight:700;user-select:none;
+}
+.switch .knob{
+  width:52px;height:28px;border:3px solid var(--ink);border-radius:999px;background:#E3E6F5;
+  position:relative;flex:0 0 auto;
+}
+.switch .knob::after{
+  content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+  background:var(--ink);transition:transform .18s;
+}
+.switch[data-on="true"] .knob{background:var(--mint)}
+.switch[data-on="true"] .knob::after{transform:translateX(24px)}
+.switch .emoji{font-size:22px}
+
+/* dials */
+.dial{border:3px solid var(--ink);border-radius:16px;background:var(--white);padding:10px 12px;margin-bottom:10px;box-shadow:3px 3px 0 var(--ink)}
+.dial .top{display:flex;justify-content:space-between;align-items:center;font-weight:800;gap:8px}
+.dial .val{font-family:'Space Mono',monospace;font-weight:700;background:var(--ink);color:var(--sun);border-radius:8px;padding:2px 9px;min-width:44px;text-align:center}
+input[type=range]{width:100%;accent-color:var(--blue);height:26px}
+.hint{font-size:13px;opacity:.7;font-weight:700}
+
+/* test cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
+.card{
+  border:3px solid var(--ink);border-radius:14px;background:var(--white);padding:9px;
+  text-align:center;font-size:13px;font-weight:800;
+}
+.card .wx{font-size:20px;letter-spacing:2px}
+.card .verdict{margin-top:5px;border-radius:9px;padding:3px 0;border:2px solid var(--ink)}
+.card.right .verdict{background:var(--mint)}
+.card.wrong .verdict{background:var(--pink);color:#fff}
+.card.wrong{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.score{
+  font-family:'Bungee',cursive;font-size:18px;border:3px solid var(--ink);border-radius:14px;
+  padding:8px 14px;background:var(--sun);box-shadow:3px 3px 0 var(--ink);display:inline-block;
+}
+
+/* professor */
+.prof{
+  display:flex;gap:14px;align-items:flex-start;
+  background:var(--grape);border:4px solid var(--ink);border-radius:26px;
+  box-shadow:var(--shadow);padding:16px;color:#fff;
+}
+.prof .bubble{
+  background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:18px;
+  padding:12px 14px;flex:1;font-weight:700;position:relative;
+}
+.prof .bubble::before{
+  content:"";position:absolute;left:-13px;top:22px;width:0;height:0;
+  border:10px solid transparent;border-right-color:var(--ink);
+}
+.prof .name{font-family:'Bungee',cursive;font-size:12px;letter-spacing:1px;margin-bottom:2px;color:var(--grape)}
+.profpic{width:78px;flex:0 0 auto}
+@media(max-width:520px){.profpic{width:58px}}
+
+/* level 3 canvas */
+.canvaswrap{border:3px solid var(--ink);border-radius:18px;overflow:hidden;background:#fff;box-shadow:3px 3px 0 var(--ink)}
+canvas{display:block;width:100%;height:auto}
+.meter{height:22px;border:3px solid var(--ink);border-radius:999px;background:#EDF0FF;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--mint);width:0;transition:width .3s}
+
+/* level 4 grid */
+.pixgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;width:min(300px,80vw);touch-action:none}
+.pix{
+  aspect-ratio:1;border:3px solid var(--ink);border-radius:9px;background:#fff;cursor:pointer;
+}
+.pix[data-on="1"]{background:var(--blue)}
+.guessbar{margin-top:8px}
+.guessbar .lab{display:flex;justify-content:space-between;font-weight:800;font-size:15px}
+.bar{height:26px;border:3px solid var(--ink);border-radius:999px;background:#EDF0FF;overflow:hidden;margin-bottom:10px}
+.bar i{display:block;height:100%;width:0;transition:width .45s cubic-bezier(.2,1.4,.4,1)}
+.bar.x i{background:var(--pink)}
+.bar.o i{background:var(--blue)}
+.brainviz{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.hn{width:26px;height:26px;border-radius:50%;border:3px solid var(--ink);background:#EDF0FF}
+
+/* graduation */
+.cert{text-align:center;padding:10px}
+.cert .seal{font-size:64px;animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.recap{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;text-align:left;margin-top:18px}
+.recap div{border:3px solid var(--ink);border-radius:16px;padding:12px;background:#F5F7FF}
+.recap b{font-family:'Bungee',cursive;font-size:13px;letter-spacing:.5px;display:block;margin-bottom:4px;color:var(--grape)}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:99}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:4px solid var(--pink);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important;transition-duration:.001s!important}
+}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div class="wrap">
+
+  <!-- ======== TOP BAR ======== -->
+  <header class="topbar">
+    <div class="brand">
+      <svg width="44" height="44" viewBox="0 0 60 60" aria-hidden="true">
+        <circle cx="30" cy="32" r="22" fill="#FF3D7F" stroke="#16183A" stroke-width="4"/>
+        <path d="M18 32h24M30 20v24" stroke="#16183A" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="30" cy="32" r="6" fill="#FFC93C" stroke="#16183A" stroke-width="4"/>
+      </svg>
+      <div>
+        <h1>Brain Builder <span>Academy</span></h1>
+        <div class="sub">Teach a robot to think</div>
+      </div>
+    </div>
+    <div class="badges" id="badges" aria-label="Badges earned">
+      <div class="badge" id="b1" title="Badge 1">⚡</div>
+      <div class="badge" id="b2" title="Badge 2">🎛️</div>
+      <div class="badge" id="b3" title="Badge 3">🏃</div>
+      <div class="badge" id="b4" title="Badge 4">🧠</div>
+    </div>
+    <button class="iconbtn" id="sound" aria-label="Turn sound off">🔊</button>
+  </header>
+
+  <!-- ======== LEVEL CHIPS ======== -->
+  <nav class="levelbar" id="levelbar" aria-label="Levels">
+    <button class="chip" data-go="1">1 · One neuron</button>
+    <button class="chip" data-go="2" disabled>2 · Turn the dials</button>
+    <button class="chip" data-go="3" disabled>3 · It learns!</button>
+    <button class="chip" data-go="4" disabled>4 · Real brain</button>
+    <button class="chip" data-go="5" disabled>★ Graduate</button>
+  </nav>
+
+  <!-- ======== STAGE ======== -->
+  <main class="stage">
+
+  <!-- ---------- LEVEL 1 ---------- -->
+  <section class="level active" id="lv1">
+    <p class="eyebrow">Level 1 of 4</p>
+    <h2>Wake up the neuron</h2>
+    <p class="lede">A brain is made of tiny decision-makers called <mark>neurons</mark>. This one listens to three friends. It adds up everything it hears — and if the total is loud enough, it <span class="big">SHOUTS</span>. Flip the switches and find out how loud is loud enough.</p>
+
+    <div class="grid2">
+      <div>
+        <div class="switchrow" id="l1switches">
+          <div class="switch" data-on="false" data-i="0" tabindex="0" role="switch" aria-checked="false">
+            <span class="knob"></span><span class="emoji">🍩</span><span>Sam smells a donut</span>
+          </div>
+          <div class="switch" data-on="false" data-i="1" tabindex="0" role="switch" aria-checked="false">
+            <span class="knob"></span><span class="emoji">👀</span><span>Ama sees a donut</span>
+          </div>
+          <div class="switch" data-on="false" data-i="2" tabindex="0" role="switch" aria-checked="false">
+            <span class="knob"></span><span class="emoji">👂</span><span>Kofi hears the donut box</span>
+          </div>
+        </div>
+        <div class="panel" style="margin-top:14px">
+          <div style="display:flex;justify-content:space-between;font-weight:900">
+            <span>Total loudness</span>
+            <span class="val" id="l1sum" style="font-family:'Space Mono',monospace;background:var(--ink);color:var(--sun);border-radius:8px;padding:2px 10px">0</span>
+          </div>
+          <p class="hint" style="margin:8px 0 0">The neuron shouts when the total reaches <b>2</b>. That number is called the <b>threshold</b>.</p>
+        </div>
+      </div>
+
+      <div>
+        <svg viewBox="0 0 520 340" id="l1svg" role="img" aria-label="A neuron creature connected to three inputs">
+          <g id="l1wires"></g>
+          <g id="l1inputs"></g>
+          <!-- neuron -->
+          <g id="l1neuron" transform="translate(300,170)">
+            <circle r="62" fill="#FFC93C" stroke="#16183A" stroke-width="5"/>
+            <circle cx="-20" cy="-14" r="13" fill="#fff" stroke="#16183A" stroke-width="4"/>
+            <circle cx="22" cy="-14" r="13" fill="#fff" stroke="#16183A" stroke-width="4"/>
+            <circle class="pupil" cx="-20" cy="-14" r="5.5" fill="#16183A"/>
+            <circle class="pupil" cx="22" cy="-14" r="5.5" fill="#16183A"/>
+            <path id="l1mouth" d="M-18 20 Q1 30 20 20" fill="none" stroke="#16183A" stroke-width="5" stroke-linecap="round"/>
+          </g>
+          <!-- output speaker -->
+          <g transform="translate(452,170)">
+            <rect x="-30" y="-34" width="60" height="68" rx="14" fill="#fff" stroke="#16183A" stroke-width="5"/>
+            <text id="l1out" x="0" y="12" text-anchor="middle" font-size="34">😴</text>
+          </g>
+        </svg>
+        <p class="hint" id="l1msg" style="text-align:center">Nothing is happening yet. Flip a switch!</p>
+      </div>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn mint" id="l1next" disabled>Make it shout to continue →</button>
+    </div>
+  </section>
+
+  <!-- ---------- LEVEL 2 ---------- -->
+  <section class="level" id="lv2">
+    <p class="eyebrow">Level 2 of 4</p>
+    <h2>Turn the dials</h2>
+    <p class="lede">Not every friend deserves the same trust. A <mark>weight</mark> is a dial that says how much a neuron listens to something. Weights can even go <b>negative</b> — that means "if this is true, do the opposite!" Set the dials so Umbrella Bot gets all 8 days right.</p>
+
+    <div class="grid2">
+      <div>
+        <div class="dial">
+          <div class="top"><span>🌧️ It is raining</span><span class="val" id="w0v">0</span></div>
+          <input type="range" id="w0" min="-5" max="5" step="1" value="0" aria-label="Weight for raining">
+        </div>
+        <div class="dial">
+          <div class="top"><span>☁️ It is cloudy</span><span class="val" id="w1v">0</span></div>
+          <input type="range" id="w1" min="-5" max="5" step="1" value="0" aria-label="Weight for cloudy">
+        </div>
+        <div class="dial">
+          <div class="top"><span>💨 It is windy</span><span class="val" id="w2v">0</span></div>
+          <input type="range" id="w2" min="-5" max="5" step="1" value="0" aria-label="Weight for windy">
+        </div>
+        <div class="dial" style="background:#FFF3D0">
+          <div class="top"><span>🎚️ Shout when total reaches</span><span class="val" id="thv">1</span></div>
+          <input type="range" id="th" min="1" max="8" step="1" value="1" aria-label="Threshold">
+        </div>
+        <p class="hint">Umbrella Bot should say YES when it's raining or cloudy — but never when it's windy, because the umbrella flips inside out!</p>
+        <div class="btnrow">
+          <span class="score" id="l2score">0 / 8 days right</span>
+          <button class="btn ghost" id="l2hint">Give me a hint</button>
+        </div>
+      </div>
+      <div>
+        <div class="cards" id="l2cards"></div>
+      </div>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn mint" id="l2next" disabled>Get all 8 right to continue →</button>
+    </div>
+  </section>
+
+  <!-- ---------- LEVEL 3 ---------- -->
+  <section class="level" id="lv3">
+    <p class="eyebrow">Level 3 of 4</p>
+    <h2>Now it learns by itself</h2>
+    <p class="lede">Turning dials by hand is slow. Real networks <mark>train</mark>: they guess, check if they were wrong, and nudge their own dials a tiny bit. Do that thousands of times and the robot teaches itself. Watch the fence move.</p>
+
+    <div class="grid2">
+      <div>
+        <div class="canvaswrap"><canvas id="l3canvas" width="560" height="380"></canvas></div>
+      </div>
+      <div>
+        <div class="panel">
+          <p style="margin:0 0 6px;font-weight:900">How many creatures does it sort correctly?</p>
+          <div class="meter"><i id="l3meter"></i></div>
+          <p style="margin:8px 0 0;font-family:'Space Mono',monospace;font-weight:700">
+            <span id="l3acc">50%</span> correct · nudges: <span id="l3steps">0</span>
+          </p>
+        </div>
+        <div class="panel" style="margin-top:12px">
+          <p style="margin:0;font-weight:900">The dials right now</p>
+          <p style="margin:6px 0 0;font-family:'Space Mono',monospace">
+            fluffy × <span id="l3w1">0.00</span><br>
+            spiky × <span id="l3w2">0.00</span><br>
+            tilt&nbsp;&nbsp;&nbsp;&nbsp;<span id="l3b">0.00</span>
+          </p>
+        </div>
+        <div class="btnrow">
+          <button class="btn" id="l3step">Nudge once</button>
+          <button class="btn pink" id="l3auto">Train fast</button>
+          <button class="btn ghost" id="l3reset">Start over</button>
+        </div>
+        <p class="hint" id="l3msg" style="margin-top:10px">The fence starts in a silly place. Every mistake pushes it a little.</p>
+      </div>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn mint" id="l3next" disabled>Reach 100% to continue →</button>
+    </div>
+  </section>
+
+  <!-- ---------- LEVEL 4 ---------- -->
+  <section class="level" id="lv4">
+    <p class="eyebrow">Level 4 of 4</p>
+    <h2>Build a real brain</h2>
+    <p class="lede">One neuron is not enough to see shapes. So we stack a <mark>layer</mark> of 8 neurons between the eyes and the answer. Right now this brain is a newborn — it knows nothing. Train it, then draw an X or an O and see if it can read your mind.</p>
+
+    <div class="grid2">
+      <div>
+        <p style="font-weight:900;margin:0 0 8px">Draw here (click or drag)</p>
+        <div class="pixgrid" id="pixgrid"></div>
+        <div class="btnrow">
+          <button class="btn ghost" id="l4clear">Clear</button>
+          <button class="btn blue" id="l4train">Train the brain</button>
+        </div>
+        <div class="meter" style="margin-top:12px"><i id="l4meter" style="background:var(--grape)"></i></div>
+        <p class="hint" id="l4trainmsg" style="margin-top:6px">Not trained yet — it will just guess.</p>
+      </div>
+
+      <div>
+        <p style="font-weight:900;margin:0 0 4px">The 8 thinking neurons</p>
+        <div class="brainviz" id="brainviz"></div>
+        <p style="font-weight:900;margin:12px 0 4px">What the brain sees</p>
+        <div class="guessbar">
+          <div class="lab"><span>❌ letter X</span><span id="pX">?</span></div>
+          <div class="bar x"><i id="barX"></i></div>
+          <div class="lab"><span>⭕ letter O</span><span id="pO">?</span></div>
+          <div class="bar o"><i id="barO"></i></div>
+        </div>
+        <div class="btnrow">
+          <button class="btn" id="l4guess">What is it?</button>
+        </div>
+        <div class="panel" style="margin-top:12px">
+          <p style="margin:0 0 8px;font-weight:900">Got it wrong? Teach it.</p>
+          <div class="btnrow" style="margin-top:0">
+            <button class="btn pink" id="teachX">This is an X</button>
+            <button class="btn blue" id="teachO">This is an O</button>
+          </div>
+          <p class="hint" id="l4teachmsg" style="margin:8px 0 0">Your drawing gets added to its lessons, then it trains again.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="btnrow">
+      <button class="btn mint" id="l4next" disabled>Train it, then test it twice →</button>
+    </div>
+  </section>
+
+  <!-- ---------- GRADUATION ---------- -->
+  <section class="level" id="lv5">
+    <div class="cert">
+      <div class="seal">🏅</div>
+      <p class="eyebrow">Certificate</p>
+      <h2>You built a brain!</h2>
+      <p class="lede" style="margin:0 auto">You are now an official Brain Builder. Here is everything you just taught a machine to do.</p>
+      <div class="recap">
+        <div><b>Neuron</b>A tiny decision-maker. It adds up what it hears and shouts if the total passes its threshold.</div>
+        <div><b>Weight</b>A trust dial. Big weight = listen closely. Negative weight = do the opposite.</div>
+        <div><b>Training</b>Guess, spot the mistake, nudge the dials. Repeat a few thousand times.</div>
+        <div><b>Layers</b>Neurons stacked in teams. Early ones spot small clues, later ones make the final call.</div>
+      </div>
+      <div class="btnrow" style="justify-content:center">
+        <button class="btn pink" id="again">Play again</button>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <!-- ======== PROFESSOR ======== -->
+  <section class="prof">
+    <svg class="profpic" viewBox="0 0 80 96" aria-hidden="true">
+      <line x1="40" y1="6" x2="40" y2="18" stroke="#16183A" stroke-width="4"/>
+      <circle cx="40" cy="6" r="6" fill="#FFC93C" stroke="#16183A" stroke-width="4"/>
+      <rect x="8" y="18" width="64" height="52" rx="16" fill="#16D6A4" stroke="#16183A" stroke-width="4"/>
+      <circle cx="28" cy="42" r="9" fill="#fff" stroke="#16183A" stroke-width="4"/>
+      <circle cx="54" cy="42" r="9" fill="#fff" stroke="#16183A" stroke-width="4"/>
+      <circle class="peye" cx="28" cy="42" r="4" fill="#16183A"/>
+      <circle class="peye" cx="54" cy="42" r="4" fill="#16183A"/>
+      <path d="M28 58 Q41 66 54 58" fill="none" stroke="#16183A" stroke-width="4" stroke-linecap="round"/>
+      <rect x="22" y="74" width="36" height="16" rx="6" fill="#fff" stroke="#16183A" stroke-width="4"/>
+    </svg>
+    <div class="bubble">
+      <div class="name">Professor Pixel</div>
+      <div id="say">Welcome to the Academy! I am a robot with no brain yet. You are going to build me one, one neuron at a time. Start by flipping a switch.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =========================================================
+   Brain Builder Academy
+   A 4-level game that teaches neurons, weights, training
+   and layers — with a real neural network in level 4.
+   ========================================================= */
+
+const $ = (id) => document.getElementById(id);
+const state = { level: 1, done: [false, false, false, false], sound: true };
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- sound ---------- */
+let actx = null;
+function beep(freq, dur = 0.12, type = 'triangle', vol = 0.16) {
+  if (!state.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + dur);
+  } catch (e) { /* audio not available */ }
+}
+const sndClick = () => beep(420, 0.07, 'square', 0.10);
+const sndFire  = () => { beep(660, 0.10); setTimeout(() => beep(990, 0.16), 90); };
+const sndWin   = () => [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.18), i * 110));
+const sndNope  = () => beep(150, 0.16, 'sawtooth', 0.10);
+
+$('sound').addEventListener('click', () => {
+  state.sound = !state.sound;
+  $('sound').textContent = state.sound ? '🔊' : '🔇';
+  $('sound').setAttribute('aria-label', state.sound ? 'Turn sound off' : 'Turn sound on');
+  if (state.sound) sndClick();
+});
+
+/* ---------- professor ---------- */
+function say(text) {
+  const el = $('say');
+  el.style.opacity = 0;
+  setTimeout(() => { el.textContent = text; el.style.opacity = 1; }, reduced ? 0 : 140);
+}
+$('say').style.transition = 'opacity .15s';
+
+/* ---------- navigation ---------- */
+function goTo(n) {
+  state.level = n;
+  document.querySelectorAll('.level').forEach(s => s.classList.remove('active'));
+  $('lv' + n).classList.add('active');
+  document.querySelectorAll('#levelbar .chip').forEach(c => {
+    c.dataset.active = (+c.dataset.go === n);
+  });
+  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  const lines = {
+    1: 'Every switch you flip sends a signal down a wire. Watch the little lights travel!',
+    2: 'Dials can be negative. A negative dial means "if this happens, do the OPPOSITE".',
+    3: 'Press "Train fast" and watch. Nobody is touching the dials now — the robot fixes itself.',
+    4: 'This one is real. 25 eyes, 8 thinking neurons, 2 answers. Train it first, or it will guess nonsense.',
+    5: 'You did it. You now know more about neural networks than most grown-ups. Go teach someone!'
+  };
+  say(lines[n]);
+}
+document.querySelectorAll('#levelbar .chip').forEach(c => {
+  c.addEventListener('click', () => { if (!c.disabled) { sndClick(); goTo(+c.dataset.go); } });
+});
+function unlock(n) {
+  const chip = document.querySelector('#levelbar .chip[data-go="' + n + '"]');
+  if (chip) chip.disabled = false;
+}
+function earn(i) {
+  if (state.done[i - 1]) return;
+  state.done[i - 1] = true;
+  $('b' + i).classList.add('on');
+  unlock(i + 1);
+  sndWin(); confetti();
+  if (state.done.every(Boolean)) unlock(5);
+}
+$('levelbar').querySelector('.chip[data-go="1"]').dataset.active = true;
+
+/* ---------- confetti ---------- */
+const cvs = $('confetti'), cx2 = cvs.getContext('2d');
+let bits = [];
+function sizeCanvas() { cvs.width = innerWidth; cvs.height = innerHeight; }
+sizeCanvas(); addEventListener('resize', sizeCanvas);
+function confetti() {
+  if (reduced) return;
+  const colors = ['#FF3D7F', '#FFC93C', '#16D6A4', '#3B5BFF', '#8A4FFF'];
+  for (let i = 0; i < 90; i++) {
+    bits.push({
+      x: innerWidth / 2 + (Math.random() - 0.5) * 260, y: innerHeight * 0.35,
+      vx: (Math.random() - 0.5) * 11, vy: Math.random() * -13 - 3,
+      s: 6 + Math.random() * 8, r: Math.random() * 6,
+      c: colors[(Math.random() * colors.length) | 0], life: 110
+    });
+  }
+  if (bits.length) requestAnimationFrame(drawConfetti);
+}
+function drawConfetti() {
+  cx2.clearRect(0, 0, cvs.width, cvs.height);
+  bits = bits.filter(b => b.life-- > 0 && b.y < innerHeight + 40);
+  bits.forEach(b => {
+    b.x += b.vx; b.y += b.vy; b.vy += 0.42; b.r += 0.16;
+    cx2.save(); cx2.translate(b.x, b.y); cx2.rotate(b.r);
+    cx2.fillStyle = b.c; cx2.fillRect(-b.s / 2, -b.s / 2, b.s, b.s * 0.6);
+    cx2.restore();
+  });
+  if (bits.length) requestAnimationFrame(drawConfetti);
+  else cx2.clearRect(0, 0, cvs.width, cvs.height);
+}
+
+/* =========================================================
+   LEVEL 1 — one neuron, three inputs, threshold 2
+   ========================================================= */
+const L1 = { on: [false, false, false], firedOnce: false };
+const L1_POS = [[70, 60], [70, 170], [70, 280]];
+const L1_EMOJI = ['🍩', '👀', '👂'];
+
+(function buildL1() {
+  const gI = $('l1inputs'), gW = $('l1wires');
+  L1_POS.forEach((p, i) => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('transform', 'translate(' + p[0] + ',' + p[1] + ')');
+    g.innerHTML =
+      '<circle r="30" fill="#fff" stroke="#16183A" stroke-width="5"/>' +
+      '<text y="10" text-anchor="middle" font-size="28">' + L1_EMOJI[i] + '</text>';
+    gI.appendChild(g);
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const d = 'M' + (p[0] + 30) + ' ' + p[1] + ' L 238 170';
+    line.setAttribute('d', d);
+    line.setAttribute('stroke', '#C7CEEA');
+    line.setAttribute('stroke-width', '8');
+    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('fill', 'none');
+    line.id = 'l1w' + i;
+    gW.appendChild(line);
+
+    const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    pulse.setAttribute('r', '7'); pulse.setAttribute('fill', '#16D6A4');
+    pulse.setAttribute('stroke', '#16183A'); pulse.setAttribute('stroke-width', '2.5');
+    pulse.id = 'l1p' + i; pulse.style.display = 'none';
+    pulse.innerHTML = '<animateMotion dur="0.9s" repeatCount="indefinite" path="' + d + '"/>';
+    gW.appendChild(pulse);
+  });
+})();
+
+function l1Update() {
+  const sum = L1.on.filter(Boolean).length;
+  $('l1sum').textContent = sum;
+  L1.on.forEach((v, i) => {
+    $('l1w' + i).setAttribute('stroke', v ? '#16D6A4' : '#C7CEEA');
+    $('l1p' + i).style.display = v ? '' : 'none';
+  });
+  const fired = sum >= 2;
+  const neuron = $('l1neuron');
+  neuron.querySelector('circle').setAttribute('fill', fired ? '#FF3D7F' : '#FFC93C');
+  $('l1mouth').setAttribute('d', fired ? 'M-20 14 Q1 42 21 14 Q1 26 -20 14' : 'M-18 20 Q1 30 20 20');
+  $('l1out').textContent = fired ? '📣' : (sum === 1 ? '🤔' : '😴');
+  neuron.style.transform = 'translate(300px,170px) scale(' + (fired ? 1.1 : 1) + ')';
+  neuron.style.transition = 'transform .2s cubic-bezier(.2,1.7,.4,1)';
+
+  if (fired) {
+    $('l1msg').innerHTML = '<b style="color:var(--pink)">IT SHOUTED!</b> Total ' + sum + ' reached the threshold of 2.';
+    if (!L1.firedOnce) {
+      L1.firedOnce = true; sndFire(); earn(1);
+      $('l1next').disabled = false;
+      $('l1next').textContent = 'Next: turn the dials →';
+      say('That is the whole secret of a neuron: add up the signals, and shout past the threshold. Now let us make some signals matter more than others.');
+    }
+  } else if (sum === 1) {
+    $('l1msg').textContent = 'One signal is not enough. It needs 2.';
+  } else {
+    $('l1msg').textContent = 'Silence. The neuron is asleep.';
+  }
+}
+document.querySelectorAll('#l1switches .switch').forEach(sw => {
+  const toggle = () => {
+    const i = +sw.dataset.i;
+    L1.on[i] = !L1.on[i];
+    sw.dataset.on = L1.on[i];
+    sw.setAttribute('aria-checked', L1.on[i]);
+    sndClick(); l1Update();
+  };
+  sw.addEventListener('click', toggle);
+  sw.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+});
+$('l1next').addEventListener('click', () => goTo(2));
+l1Update();
+
+/* =========================================================
+   LEVEL 2 — weights + threshold, 8 weather days
+   ========================================================= */
+const DAYS = [];
+for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) for (let w = 0; w < 2; w++) {
+  DAYS.push({ rain: r, cloud: c, wind: w, want: ((r || c) && !w) ? 1 : 0 });
+}
+const L2 = { w: [0, 0, 0], th: 1, hints: 0 };
+const ANSWER = { w: [3, 2, -5], th: 2 };
+
+(function buildL2() {
+  $('l2cards').innerHTML = DAYS.map((d, i) =>
+    '<div class="card" id="c' + i + '">' +
+      '<div class="wx">' + (d.rain ? '🌧️' : '·') + (d.cloud ? '☁️' : '·') + (d.wind ? '💨' : '·') + '</div>' +
+      '<div>should be<br><b>' + (d.want ? 'YES ☂️' : 'NO 🚫') + '</b></div>' +
+      '<div class="verdict" id="v' + i + '">?</div>' +
+    '</div>').join('');
+})();
+
+function l2Update(playSound) {
+  let right = 0;
+  DAYS.forEach((d, i) => {
+    const total = d.rain * L2.w[0] + d.cloud * L2.w[1] + d.wind * L2.w[2];
+    const said = total >= L2.th ? 1 : 0;
+    const ok = said === d.want;
+    if (ok) right++;
+    const card = $('c' + i);
+    card.classList.toggle('right', ok);
+    card.classList.toggle('wrong', !ok);
+    $('v' + i).textContent = (said ? 'says YES' : 'says NO') + (ok ? ' ✓' : ' ✗');
+  });
+  $('l2score').textContent = right + ' / 8 days right';
+  if (right === 8) {
+    $('l2score').style.background = 'var(--mint)';
+    if (!state.done[1]) {
+      earn(2);
+      $('l2next').disabled = false;
+      $('l2next').textContent = 'Next: watch it learn →';
+      say('Perfect dials! Notice the wind dial had to go negative — that is how a neuron says "no matter what else, forget it".');
+    }
+  } else {
+    $('l2score').style.background = 'var(--sun)';
+    if (playSound) sndClick();
+  }
+}
+['w0', 'w1', 'w2'].forEach((id, i) => {
+  $(id).addEventListener('input', e => {
+    L2.w[i] = +e.target.value;
+    $(id + 'v').textContent = (L2.w[i] > 0 ? '+' : '') + L2.w[i];
+    l2Update(true);
+  });
+});
+$('th').addEventListener('input', e => {
+  L2.th = +e.target.value; $('thv').textContent = L2.th; l2Update(true);
+});
+$('l2hint').addEventListener('click', () => {
+  L2.hints++;
+  const tips = [
+    'Rain is the strongest reason to take an umbrella. Push the rain dial up high.',
+    'Cloudy is a weaker reason than rain — a smaller positive number is enough.',
+    'Wind must cancel everything else out. Make it very negative, like -5.',
+    'Last piece: set the shout level to 2.'
+  ];
+  if (L2.hints <= 4) { say(tips[L2.hints - 1]); }
+  else {
+    ['w0', 'w1', 'w2'].forEach((id, i) => {
+      $(id).value = ANSWER.w[i]; L2.w[i] = ANSWER.w[i];
+      $(id + 'v').textContent = (ANSWER.w[i] > 0 ? '+' : '') + ANSWER.w[i];
+    });
+    $('th').value = ANSWER.th; L2.th = ANSWER.th; $('thv').textContent = ANSWER.th;
+    say('Here is one set of dials that works. Slide them around and see which days break — that is how you learn what each dial does.');
+    l2Update(false);
+  }
+  sndClick();
+});
+$('l2next').addEventListener('click', () => goTo(3));
+l2Update(false);
+
+/* =========================================================
+   LEVEL 3 — perceptron learns a boundary
+   ========================================================= */
+const c3 = $('l3canvas'), g3 = c3.getContext('2d');
+const L3 = { w1: 0, w2: 0, b: 0, steps: 0, pts: [], timer: null, best: 0 };
+
+function rng(seed) { return () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296; }
+(function makePoints() {
+  const r = rng(7);
+  for (let i = 0; i < 14; i++) L3.pts.push({ x: 0.55 + r() * 0.32, y: 0.13 + r() * 0.30, t: 1 });  // fluffy friends
+  for (let i = 0; i < 14; i++) L3.pts.push({ x: 0.16 + r() * 0.30, y: 0.55 + r() * 0.32, t: -1 }); // spiky grumps
+})();
+function l3Reset() {
+  L3.w1 = -0.9; L3.w2 = -0.7; L3.b = 0.35; L3.steps = 0; L3.best = 0;
+  stopAuto(); l3Draw();
+}
+function score() {
+  let ok = 0;
+  L3.pts.forEach(p => { if (Math.sign(L3.w1 * p.x + L3.w2 * p.y + L3.b) === p.t) ok++; });
+  return ok;
+}
+function l3Draw() {
+  const W = c3.width, H = c3.height;
+  g3.clearRect(0, 0, W, H);
+  // axes
+  g3.fillStyle = '#F5F7FF'; g3.fillRect(0, 0, W, H);
+  g3.strokeStyle = '#C7CEEA'; g3.lineWidth = 2;
+  for (let i = 1; i < 5; i++) {
+    g3.beginPath(); g3.moveTo(W * i / 5, 0); g3.lineTo(W * i / 5, H); g3.stroke();
+    g3.beginPath(); g3.moveTo(0, H * i / 5); g3.lineTo(W, H * i / 5); g3.stroke();
+  }
+  g3.fillStyle = '#16183A'; g3.font = "bold 14px Nunito, sans-serif";
+  g3.fillText('more fluffy →', 12, H - 12);
+  g3.save(); g3.translate(16, H - 40); g3.rotate(-Math.PI / 2); g3.fillText('more spiky →', 0, 0); g3.restore();
+
+  // fence
+  const X = (u) => u * W, Y = (v) => H - v * H;
+  const ptsOnLine = [];
+  for (const u of [-0.5, 1.5]) {
+    if (Math.abs(L3.w2) > 1e-6) ptsOnLine.push([X(u), Y(-(L3.w1 * u + L3.b) / L3.w2)]);
+  }
+  if (ptsOnLine.length === 2) {
+    g3.strokeStyle = '#8A4FFF'; g3.lineWidth = 7; g3.lineCap = 'round';
+    g3.setLineDash([16, 12]);
+    g3.beginPath(); g3.moveTo(ptsOnLine[0][0], ptsOnLine[0][1]);
+    g3.lineTo(ptsOnLine[1][0], ptsOnLine[1][1]); g3.stroke();
+    g3.setLineDash([]);
+  }
+  // creatures
+  L3.pts.forEach(p => {
+    const correct = Math.sign(L3.w1 * p.x + L3.w2 * p.y + L3.b) === p.t;
+    const px = X(p.x), py = Y(p.y);
+    g3.beginPath(); g3.arc(px, py, 15, 0, 7);
+    g3.fillStyle = p.t === 1 ? '#16D6A4' : '#FF3D7F';
+    g3.fill(); g3.lineWidth = 4; g3.strokeStyle = '#16183A'; g3.stroke();
+    g3.fillStyle = '#16183A'; g3.font = '15px Nunito, sans-serif'; g3.textAlign = 'center';
+    g3.fillText(p.t === 1 ? '🧸' : '🌵', px, py + 5);
+    if (!correct) {
+      g3.strokeStyle = '#16183A'; g3.lineWidth = 3;
+      g3.beginPath(); g3.arc(px, py, 21, 0, 7); g3.stroke();
+    }
+    g3.textAlign = 'left';
+  });
+
+  const ok = score(), pct = Math.round(ok / L3.pts.length * 100);
+  $('l3acc').textContent = pct + '%';
+  $('l3meter').style.width = pct + '%';
+  $('l3steps').textContent = L3.steps;
+  $('l3w1').textContent = L3.w1.toFixed(2);
+  $('l3w2').textContent = L3.w2.toFixed(2);
+  $('l3b').textContent = L3.b.toFixed(2);
+
+  if (pct === 100) {
+    $('l3msg').innerHTML = '<b style="color:var(--mint)">The fence is perfect.</b> Nobody moved it by hand — the mistakes did.';
+    if (!state.done[2]) {
+      earn(3); stopAuto();
+      $('l3next').disabled = false;
+      $('l3next').textContent = 'Next: build a real brain →';
+      say('That is training. Guess, measure the mistake, nudge. A big network does this millions of times with millions of dials.');
+    }
+  } else if (L3.steps > 0) {
+    $('l3msg').textContent = 'Still ' + (L3.pts.length - ok) + ' creature(s) on the wrong side. Keep nudging.';
+  }
+}
+function l3Step() {
+  // perceptron rule: fix one wrong example
+  const wrong = L3.pts.filter(p => Math.sign(L3.w1 * p.x + L3.w2 * p.y + L3.b) !== p.t);
+  if (!wrong.length) { l3Draw(); return false; }
+  const p = wrong[(Math.random() * wrong.length) | 0];
+  const lr = 0.14;
+  L3.w1 += lr * p.t * p.x; L3.w2 += lr * p.t * p.y; L3.b += lr * p.t;
+  L3.steps++;
+  l3Draw();
+  return true;
+}
+function stopAuto() { if (L3.timer) { clearInterval(L3.timer); L3.timer = null; $('l3auto').textContent = 'Train fast'; } }
+$('l3step').addEventListener('click', () => { sndClick(); if (!l3Step()) sndWin(); });
+$('l3auto').addEventListener('click', () => {
+  if (L3.timer) { stopAuto(); return; }
+  $('l3auto').textContent = 'Pause';
+  L3.timer = setInterval(() => {
+    if (!l3Step()) stopAuto();
+    else if (L3.steps % 6 === 0) beep(300 + L3.steps * 4 % 500, 0.04, 'square', 0.05);
+  }, reduced ? 10 : 90);
+});
+$('l3reset').addEventListener('click', () => { sndNope(); l3Reset(); });
+$('l3next').addEventListener('click', () => goTo(4));
+l3Reset();
+
+/* =========================================================
+   LEVEL 4 — a real 25 → 8 → 2 neural network
+   ========================================================= */
+const NIN = 25, NHID = 8, NOUT = 2;
+const NET = { w1: [], b1: [], w2: [], b2: [], trained: false };
+const L4 = { pix: new Array(25).fill(0), tests: 0, painting: false, paintVal: 1 };
+
+function randw(n) { return Array.from({ length: n }, () => (Math.random() * 2 - 1) * 0.8); }
+function initNet() {
+  NET.w1 = Array.from({ length: NHID }, () => randw(NIN));
+  NET.b1 = new Array(NHID).fill(0);
+  NET.w2 = Array.from({ length: NOUT }, () => randw(NHID));
+  NET.b2 = new Array(NOUT).fill(0);
+  NET.trained = false;
+}
+const sig = z => 1 / (1 + Math.exp(-z));
+
+function forward(x) {
+  const h = NET.w1.map((row, j) => {
+    let s = NET.b1[j];
+    for (let i = 0; i < NIN; i++) s += row[i] * x[i];
+    return sig(s);
+  });
+  const z = NET.w2.map((row, k) => {
+    let s = NET.b2[k];
+    for (let j = 0; j < NHID; j++) s += row[j] * h[j];
+    return s;
+  });
+  const m = Math.max(...z);
+  const e = z.map(v => Math.exp(v - m));
+  const sum = e.reduce((a, b) => a + b, 0);
+  return { h, p: e.map(v => v / sum) };
+}
+function trainStep(x, target, lr) {
+  const { h, p } = forward(x);
+  const dz = p.map((v, k) => v - (k === target ? 1 : 0));
+  const dh = new Array(NHID).fill(0);
+  for (let k = 0; k < NOUT; k++) {
+    for (let j = 0; j < NHID; j++) {
+      dh[j] += dz[k] * NET.w2[k][j];
+      NET.w2[k][j] -= lr * dz[k] * h[j];
+    }
+    NET.b2[k] -= lr * dz[k];
+  }
+  for (let j = 0; j < NHID; j++) {
+    const g = dh[j] * h[j] * (1 - h[j]);
+    for (let i = 0; i < NIN; i++) NET.w1[j][i] -= lr * g * x[i];
+    NET.b1[j] -= lr * g;
+  }
+  return -Math.log(Math.max(p[target], 1e-9));
+}
+
+/* built-in lessons: 0 = X, 1 = O */
+const LESSONS = [
+  ['10001,01010,00100,01010,10001', 0],
+  ['00000,01010,00100,01010,00000', 0],
+  ['10001,01010,00100,01010,10000', 0],
+  ['10001,01010,00100,01011,10001', 0],
+  ['01010,00100,01010,00000,00000', 0],
+  ['00000,00000,01010,00100,01010', 0],
+  ['10001,01010,00100,01010,00001', 0],
+  ['01110,10001,10001,10001,01110', 1],
+  ['00000,01110,01010,01110,00000', 1],
+  ['11111,10001,10001,10001,11111', 1],
+  ['01110,10001,10001,10001,01100', 1],
+  ['00000,00100,01010,00100,00000', 1],
+  ['01100,10010,10010,01100,00000', 1],
+  ['00110,01001,01001,00110,00000', 1]
+].map(([s, t]) => ({ x: s.split(',').join('').split('').map(Number), t }));
+const EXTRA = [];
+
+(function buildGrid() {
+  const g = $('pixgrid');
+  for (let i = 0; i < 25; i++) {
+    const d = document.createElement('div');
+    d.className = 'pix'; d.dataset.on = '0'; d.dataset.i = i;
+    d.setAttribute('role', 'button');
+    d.setAttribute('aria-label', 'pixel ' + (i + 1));
+    d.tabIndex = 0;
+    g.appendChild(d);
+  }
+  for (let j = 0; j < NHID; j++) {
+    const h = document.createElement('div');
+    h.className = 'hn'; h.id = 'hn' + j;
+    $('brainviz').appendChild(h);
+  }
+})();
+
+function setPix(i, v) {
+  L4.pix[i] = v;
+  $('pixgrid').children[i].dataset.on = v ? '1' : '0';
+}
+$('pixgrid').addEventListener('pointerdown', e => {
+  const t = e.target.closest('.pix'); if (!t) return;
+  L4.painting = true;
+  if (t.hasPointerCapture && t.hasPointerCapture(e.pointerId)) t.releasePointerCapture(e.pointerId);
+  L4.paintVal = L4.pix[+t.dataset.i] ? 0 : 1;
+  setPix(+t.dataset.i, L4.paintVal); beep(700, 0.03, 'square', 0.06);
+});
+$('pixgrid').addEventListener('pointermove', e => {
+  if (!L4.painting) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const t = el && el.closest ? el.closest('.pix') : null;
+  if (t && L4.pix[+t.dataset.i] !== L4.paintVal) setPix(+t.dataset.i, L4.paintVal);
+});
+addEventListener('pointerup', () => { L4.painting = false; });
+$('pixgrid').addEventListener('keydown', e => {
+  const t = e.target.closest('.pix'); if (!t) return;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setPix(+t.dataset.i, L4.pix[+t.dataset.i] ? 0 : 1); }
+});
+$('l4clear').addEventListener('click', () => { for (let i = 0; i < 25; i++) setPix(i, 0); sndNope(); });
+
+function trainNet(msgWhenDone) {
+  const data = LESSONS.concat(EXTRA);
+  let epoch = 0;
+  const EPOCHS = 260;
+  $('l4train').disabled = true;
+  $('l4trainmsg').textContent = 'Training…';
+  const tick = () => {
+    let loss = 0;
+    for (let e = 0; e < 12 && epoch < EPOCHS; e++, epoch++) {
+      const order = data.map((_, i) => i).sort(() => Math.random() - 0.5);
+      loss = 0;
+      for (const i of order) loss += trainStep(data[i].x, data[i].t, 0.35);
+      loss /= data.length;
+    }
+    $('l4meter').style.width = Math.round(epoch / EPOCHS * 100) + '%';
+    if (epoch % 48 === 0) beep(400 + epoch, 0.03, 'sine', 0.05);
+    if (epoch < EPOCHS) requestAnimationFrame(tick);
+    else {
+      NET.trained = true;
+      $('l4train').disabled = false;
+      $('l4train').textContent = 'Train again';
+      $('l4trainmsg').innerHTML = '<b style="color:var(--grape)">Trained on ' + data.length + ' examples.</b> Now draw something and ask it.';
+      sndWin();
+      say(msgWhenDone);
+    }
+  };
+  requestAnimationFrame(tick);
+}
+$('l4train').addEventListener('click', () => {
+  sndClick();
+  trainNet('Done! It just adjusted 226 tiny dials by itself. Draw an X or an O and press "What is it?".');
+});
+
+function guess() {
+  const { h, p } = forward(L4.pix);
+  h.forEach((v, j) => {
+    const el = $('hn' + j);
+    el.style.background = 'rgba(138,79,255,' + v.toFixed(2) + ')';
+    el.style.transform = 'scale(' + (0.8 + v * 0.5).toFixed(2) + ')';
+    el.style.transition = 'all .3s';
+  });
+  const pX = Math.round(p[0] * 100), pO = Math.round(p[1] * 100);
+  $('barX').style.width = pX + '%'; $('barO').style.width = pO + '%';
+  $('pX').textContent = pX + '%'; $('pO').textContent = pO + '%';
+  const drawn = L4.pix.reduce((a, b) => a + b, 0);
+
+  if (drawn === 0) { say('The page is blank! Draw something in the grid first.'); sndNope(); return; }
+  if (!NET.trained) {
+    say('See? It is guessing almost 50/50 nonsense, because nobody has taught it anything yet. Press "Train the brain".');
+    sndNope(); return;
+  }
+  sndFire();
+  const winner = pX > pO ? 'an X' : 'an O';
+  const conf = Math.max(pX, pO);
+  say('I am ' + conf + '% sure that is ' + winner + '. If I am wrong, teach me with the buttons below — that is exactly how real networks improve.');
+  L4.tests++;
+  if (L4.tests >= 2 && !state.done[3]) {
+    earn(4);
+    $('l4next').disabled = false;
+    $('l4next').textContent = 'Collect your certificate →';
+  }
+}
+$('l4guess').addEventListener('click', guess);
+
+function teach(t) {
+  if (L4.pix.reduce((a, b) => a + b, 0) === 0) { say('Draw the shape first, then tell me what it is.'); sndNope(); return; }
+  EXTRA.push({ x: L4.pix.slice(), t });
+  $('l4teachmsg').textContent = 'Added! It now has ' + (LESSONS.length + EXTRA.length) + ' lessons. Retraining…';
+  trainNet('I learned your example. This is how real AI gets better: more examples, more training.');
+}
+$('teachX').addEventListener('click', () => teach(0));
+$('teachO').addEventListener('click', () => teach(1));
+$('l4next').addEventListener('click', () => goTo(5));
+
+$('again').addEventListener('click', () => location.reload());
+
+initNet();
+guessInit();
+function guessInit() {
+  const { h } = forward(L4.pix);
+  h.forEach((v, j) => { $('hn' + j).style.background = 'rgba(138,79,255,' + (v * 0.8).toFixed(2) + ')'; });
+}
+</script>
+</body>
+</html>
